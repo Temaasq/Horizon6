@@ -1,0 +1,286 @@
+[gd_scene load_steps=15 format=3 uid="uid://horizon6main01"]
+
+[ext_resource type="Script" path="res://scripts/car.gd" id="1_car"]
+[ext_resource type="Script" path="res://scripts/camera_follow.gd" id="2_cam"]
+[ext_resource type="Script" path="res://scripts/hud_touch.gd" id="3_hud"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sky"]
+sky_top_color = Color(0.08, 0.12, 0.22, 1)
+sky_horizon_color = Color(0.25, 0.15, 0.35, 1)
+ground_bottom_color = Color(0.05, 0.05, 0.08, 1)
+
+[sub_resource type="Sky" id="Sky_env"]
+sky_material = SubResource("ProceduralSkyMaterial_sky")
+
+[sub_resource type="Environment" id="Environment_main"]
+background_mode = 2
+sky = SubResource("Sky_env")
+ambient_light_source = 2
+ambient_light_color = Color(0.35, 0.38, 0.5, 1)
+tonemap_mode = 3
+glow_enabled = true
+glow_bloom = 0.2
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ground"]
+size = Vector3(500, 1, 500)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
+albedo_color = Color(0.12, 0.13, 0.16, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_ground"]
+material = SubResource("StandardMaterial3D_ground")
+size = Vector3(500, 1, 500)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_car"]
+size = Vector3(1.9, 0.85, 4.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_carbody"]
+albedo_color = Color(0.1, 0.45, 0.95, 1)
+metallic = 0.8
+roughness = 0.25
+
+[sub_resource type="BoxMesh" id="BoxMesh_carbody"]
+material = SubResource("StandardMaterial3D_carbody")
+size = Vector3(1.8, 0.75, 4.0)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_wheel"]
+top_radius = 0.35
+bottom_radius = 0.35
+height = 0.28
+
+[node name="Main" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_main")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.354, 0.354, 0, 0.707, 0.707, -0.5, -0.612, 0.612, 0, 20, 0)
+light_color = Color(1, 0.92, 0.82, 1)
+light_energy = 1.2
+shadow_enabled = true
+
+[node name="Ground" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("BoxShape3D_ground")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
+mesh = SubResource("BoxMesh_ground")
+
+[node name="Car" type="VehicleBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+mass = 1250.0
+center_of_mass_mode = 1
+center_of_mass = Vector3(0, -0.15, 0)
+script = ExtResource("1_car")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Car"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+shape = SubResource("BoxShape3D_car")
+
+[node name="BodyMesh" type="MeshInstance3D" parent="Car"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+mesh = SubResource("BoxMesh_carbody")
+
+[node name="FrontLeft" type="VehicleWheel3D" parent="Car"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.92, 0.15, -1.35)
+use_as_steering = true
+wheel_radius = 0.35
+suspension_stiffness = 32.0
+suspension_max_force = 7000.0
+damping_compression = 1.2
+damping_relaxation = 1.8
+wheel_friction_slip = 3.8
+
+[node name="WheelMesh" type="MeshInstance3D" parent="Car/FrontLeft"]
+transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("CylinderMesh_wheel")
+
+[node name="FrontRight" type="VehicleWheel3D" parent="Car"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.92, 0.15, -1.35)
+use_as_steering = true
+wheel_radius = 0.35
+suspension_stiffness = 32.0
+suspension_max_force = 7000.0
+damping_compression = 1.2
+damping_relaxation = 1.8
+wheel_friction_slip = 3.8
+
+[node name="WheelMesh" type="MeshInstance3D" parent="Car/FrontRight"]
+transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("CylinderMesh_wheel")
+
+[node name="BackLeft" type="VehicleWheel3D" parent="Car"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.92, 0.15, 1.35)
+use_as_traction = true
+wheel_radius = 0.35
+suspension_stiffness = 32.0
+suspension_max_force = 7000.0
+damping_compression = 1.2
+damping_relaxation = 1.8
+wheel_friction_slip = 3.2
+
+[node name="WheelMesh" type="MeshInstance3D" parent="Car/BackLeft"]
+transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("CylinderMesh_wheel")
+
+[node name="BackRight" type="VehicleWheel3D" parent="Car"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.92, 0.15, 1.35)
+use_as_traction = true
+wheel_radius = 0.35
+suspension_stiffness = 32.0
+suspension_max_force = 7000.0
+damping_compression = 1.2
+damping_relaxation = 1.8
+wheel_friction_slip = 3.2
+
+[node name="WheelMesh" type="MeshInstance3D" parent="Car/BackRight"]
+transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("CylinderMesh_wheel")
+
+[node name="ChaseCamera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.966, 0.259, 0, -0.259, 0.966, 0, 3, 7)
+current = true
+fov = 72.0
+script = ExtResource("2_cam")
+target_path = NodePath("../Car")
+
+[node name="UI" type="CanvasLayer" parent="."]
+script = ExtResource("3_hud")
+car_path = NodePath("../Car")
+
+[node name="HUD" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="SpeedLabel" type="Label" parent="UI/HUD"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -100.0
+offset_top = 24.0
+offset_right = 100.0
+offset_bottom = 72.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 32
+text = "0 KM/H"
+horizontal_alignment = 1
+
+[node name="TitleLabel" type="Label" parent="UI/HUD"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -150.0
+offset_top = 68.0
+offset_right = 150.0
+offset_bottom = 96.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.2, 0.8, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "HORIZON 6: JAPAN 3D"
+horizontal_alignment = 1
+
+[node name="Controls" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Left" type="Button" parent="UI/Controls"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 32.0
+offset_top = -140.0
+offset_right = 132.0
+offset_bottom = -40.0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 28
+text = "◀"
+
+[node name="Right" type="Button" parent="UI/Controls"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 152.0
+offset_top = -140.0
+offset_right = 252.0
+offset_bottom = -40.0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 28
+text = "▶"
+
+[node name="Gas" type="Button" parent="UI/Controls"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -132.0
+offset_top = -160.0
+offset_right = -32.0
+offset_bottom = -40.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 22
+text = "ГАЗ"
+
+[node name="Brake" type="Button" parent="UI/Controls"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -252.0
+offset_top = -140.0
+offset_right = -152.0
+offset_bottom = -40.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 20
+text = "ТОРМОЗ"
+
+[node name="Handbrake" type="Button" parent="UI/Controls"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -252.0
+offset_top = -230.0
+offset_right = -152.0
+offset_bottom = -160.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 18
+text = "РУЧНИК"
+
+[node name="Reset" type="Button" parent="UI/Controls"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -132.0
+offset_top = 24.0
+offset_right = -32.0
+offset_bottom = 74.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 16
+text = "СБРОС"
