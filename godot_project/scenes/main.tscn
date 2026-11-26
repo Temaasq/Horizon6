@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scripts/car.gd" id="1_car"]
 [ext_resource type="Script" path="res://scripts/camera_follow.gd" id="2_cam"]
 [ext_resource type="Script" path="res://scripts/hud_touch.gd" id="3_hud"]
+[ext_resource type="ArrayMesh" path="res://assets/models/mercedes_c63/mercedes_c63.obj" id="4_mercedes"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sky"]
 sky_top_color = Color(0.08, 0.12, 0.22, 1)
@@ -81,8 +82,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
 shape = SubResource("BoxShape3D_car")
 
 [node name="BodyMesh" type="MeshInstance3D" parent="Car"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
-mesh = SubResource("BoxMesh_carbody")
+transform = Transform3D(0, 0, 1.85, 0, 1.85, 0, -1.85, 0, 0, 0, 0.25, 0)
+mesh = ExtResource("4_mercedes")
 
 [node name="FrontLeft" type="VehicleWheel3D" parent="Car"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.92, 0.15, -1.35)
