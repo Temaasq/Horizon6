@@ -82,7 +82,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
 shape = SubResource("BoxShape3D_car")
 
 [node name="MercedesMesh" parent="Car" instance=ExtResource("4_mercedes")]
-transform = Transform3D(0, 0, 1.85, 0, 1.85, 0, -1.85, 0, 0, 0, 0.25, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
 
 [node name="FrontLeft" type="VehicleWheel3D" parent="Car"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.92, 0.15, -1.35)
