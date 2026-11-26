@@ -20,7 +20,7 @@ ambient_light_source = 2
 ambient_light_color = Color(0.35, 0.38, 0.5, 1)
 tonemap_mode = 3
 glow_enabled = true
-glow_bloom = 0.2
+glow_bloom = 0.05
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ground"]
 size = Vector3(500, 1, 500)
@@ -57,8 +57,8 @@ environment = SubResource("Environment_main")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.866, -0.354, 0.354, 0, 0.707, 0.707, -0.5, -0.612, 0.612, 0, 20, 0)
-light_color = Color(1, 0.92, 0.82, 1)
-light_energy = 1.2
+light_color = Color(1, 0.94, 0.88, 1)
+light_energy = 0.85
 shadow_enabled = true
 
 [node name="Ground" type="StaticBody3D" parent="."]
