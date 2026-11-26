@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scripts/car.gd" id="1_car"]
 [ext_resource type="Script" path="res://scripts/camera_follow.gd" id="2_cam"]
 [ext_resource type="Script" path="res://scripts/hud_touch.gd" id="3_hud"]
-[ext_resource type="ArrayMesh" path="res://assets/models/mercedes_c63/mercedes_c63.obj" id="4_mercedes"]
+[ext_resource type="PackedScene" path="res://assets/models/mercedes_c63.glb" id="4_mercedes"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sky"]
 sky_top_color = Color(0.08, 0.12, 0.22, 1)
@@ -81,9 +81,8 @@ script = ExtResource("1_car")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
 shape = SubResource("BoxShape3D_car")
 
-[node name="BodyMesh" type="MeshInstance3D" parent="Car"]
+[node name="MercedesMesh" parent="Car" instance=ExtResource("4_mercedes")]
 transform = Transform3D(0, 0, 1.85, 0, 1.85, 0, -1.85, 0, 0, 0, 0.25, 0)
-mesh = ExtResource("4_mercedes")
 
 [node name="FrontLeft" type="VehicleWheel3D" parent="Car"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.92, 0.15, -1.35)
@@ -96,6 +95,7 @@ damping_relaxation = 1.8
 wheel_friction_slip = 3.8
 
 [node name="WheelMesh" type="MeshInstance3D" parent="Car/FrontLeft"]
+visible = false
 transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 0, 0)
 mesh = SubResource("CylinderMesh_wheel")
 
@@ -110,6 +110,7 @@ damping_relaxation = 1.8
 wheel_friction_slip = 3.8
 
 [node name="WheelMesh" type="MeshInstance3D" parent="Car/FrontRight"]
+visible = false
 transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 0, 0)
 mesh = SubResource("CylinderMesh_wheel")
 
@@ -124,6 +125,7 @@ damping_relaxation = 1.8
 wheel_friction_slip = 3.2
 
 [node name="WheelMesh" type="MeshInstance3D" parent="Car/BackLeft"]
+visible = false
 transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 0, 0)
 mesh = SubResource("CylinderMesh_wheel")
 
@@ -138,6 +140,7 @@ damping_relaxation = 1.8
 wheel_friction_slip = 3.2
 
 [node name="WheelMesh" type="MeshInstance3D" parent="Car/BackRight"]
+visible = false
 transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 0, 0)
 mesh = SubResource("CylinderMesh_wheel")
 
