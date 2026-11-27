@@ -40,15 +40,18 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android 34 platform & build-tools
+      - name: Ensure Android 34 platform & build-tools
         run: |
-          yes | sdkmanager --licenses >/dev/null || true
-          if [ ! -f "$ANDROID_HOME/platforms/android-34/android.jar" ] || [ ! -d "$ANDROID_HOME/build-tools/34.0.0" ]; then
-            sdkmanager "platforms;android-34" "build-tools;34.0.0"
+          SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
+          SDKMANAGER=$(find "$SDK_ROOT/cmdline-tools" -name sdkmanager -type f 2>/dev/null | head -n 1)
+          if [ -n "$SDKMANAGER" ]; then
+            yes | "$SDKMANAGER" --licenses >/dev/null || true
+            if [ ! -f "$SDK_ROOT/platforms/android-34/android.jar" ] || [ ! -d "$SDK_ROOT/build-tools/34.0.0" ]; then
+              "$SDKMANAGER" "platforms;android-34" "build-tools;34.0.0"
+            fi
           fi
+          ls -la "$SDK_ROOT/platforms/android-34/android.jar" "$SDK_ROOT/build-tools/34.0.0"
 
       - name: Run automated JS tests
         run: node --test tests/unit/*.test.js tests/e2e/*.test.js
