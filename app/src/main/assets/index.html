@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Horizon 6: Япония 3D</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script defer src="vendor/three.min.js"></script>
+  <script defer src="vendor/GLTFLoader.js"></script>
+  <script defer src="js/cars.js"></script>
+  <script defer src="js/world_data.js"></script>
+  <script defer src="js/physics.js"></script>
+  <script defer src="js/car_models.js"></script>
+  <script defer src="js/world_meshes.js"></script>
+  <script defer src="js/renderer3d.js"></script>
+  <script defer src="js/controls.js"></script>
+  <script defer src="js/audio.js"></script>
+  <script defer src="js/hud.js"></script>
+  <script defer src="js/main.js"></script>
+</head>
+<body>
+  <div id="app">
+    <div id="webgl-container"></div>
+
+    <div id="hud-root">
+      <!-- Top Row: Minimap + Banners + Score/Quick Actions -->
+      <div class="hud-top">
+        <div class="hud-top-left">
+          <div id="minimap-box" class="glass-panel">
+            <canvas id="minimap-canvas" width="144" height="144"></canvas>
+            <span class="minimap-north">С</span>
+          </div>
+          <div id="hud-region-pill" class="region-pill">ФЕСТИВАЛЬ ХОРАЙЗОН</div>
+        </div>
+
+        <div class="hud-top-center">
+          <div id="drift-banner" class="skill-banner hidden">
+            <span id="drift-banner-mult" class="skill-mult">x1</span>
+            <span id="drift-banner-label">ДРИФТ</span>
+            <span id="drift-banner-pts" class="skill-pts">0</span>
+          </div>
+          <div id="event-banner" class="event-banner hidden"></div>
+          <div id="toast-banner" class="toast-banner hidden"></div>
+        </div>
+
+        <div class="hud-top-right">
+          <div class="score-strip glass-panel">
+            <div class="score-cell">
+              <span class="score-label">КРЕДИТЫ</span>
+              <span id="hud-cr" class="score-value accent-gold">0 CR</span>
+            </div>
+            <div class="score-cell">
+              <span class="score-label">РЕКОРД</span>
+              <span id="hud-record" class="score-value accent-cyan">0 КМ/Ч</span>
+            </div>
+            <div class="score-cell">
+              <span class="score-label">СТЕНДЫ</span>
+              <span id="hud-boards" class="score-value accent-pink">0/24</span>
+            </div>
+          </div>
+
+          <div class="quick-actions">
+            <button id="btn-garage" type="button" class="hud-action-btn">Гараж</button>
+            <button id="btn-camera" type="button" class="hud-action-btn">Камера</button>
+            <button id="btn-mute" type="button" class="hud-action-btn">Звук</button>
+            <button id="btn-reset" type="button" class="hud-action-btn">Сброс</button>
+            <button id="btn-settings" type="button" class="hud-action-btn">Настройки</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Row: Steering (Left) + Tachometer (Center-Right) + Pedals (Right) -->
+      <div class="hud-bottom">
+        <div id="steer-cluster" class="steer-cluster">
+          <!-- Mode 1: Interactive Steering Wheel (default) -->
+          <div id="steer-wheel-wrap" class="steer-wheel-wrap">
+            <div id="steer-wheel" class="steer-wheel" aria-label="Руль">
+              <svg viewBox="0 0 160 160" class="wheel-svg">
+                <circle cx="80" cy="80" r="66" fill="none" stroke="#1b2232" stroke-width="18"></circle>
+                <circle cx="80" cy="80" r="66" fill="none" stroke="#36415c" stroke-width="12"></circle>
+                <path d="M 68 14 A 66 66 0 0 1 92 14" fill="none" stroke="#ff2e7e" stroke-width="14" stroke-linecap="round"></path>
+                <rect x="20" y="72" width="120" height="16" rx="6" fill="#232b3e" stroke="#445275" stroke-width="2"></rect>
+                <rect x="72" y="76" width="16" height="66" rx="6" fill="#232b3e" stroke="#445275" stroke-width="2"></rect>
+                <circle cx="80" cy="80" r="22" fill="#141824" stroke="#00e5ff" stroke-width="3"></circle>
+                <text x="80" y="85" text-anchor="middle" fill="#e8f4ff" font-size="12" font-weight="700">H6</text>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Mode 2: Left / Right Buttons -->
+          <div id="steer-buttons-wrap" class="steer-buttons-wrap hidden">
+            <button id="btn-steer-left" type="button" class="touch-btn steer-pad-btn" aria-label="Влево">&#9664;</button>
+            <button id="btn-steer-right" type="button" class="touch-btn steer-pad-btn" aria-label="Вправо">&#9654;</button>
+          </div>
+
+          <!-- Mode 3: Gyroscope Indicator -->
+          <div id="gyro-indicator" class="gyro-indicator glass-panel hidden">
+            <div class="gyro-title">ГИРОСКОП</div>
+            <div class="gyro-bar-track">
+              <div id="gyro-bar-dot" class="gyro-bar-dot"></div>
+            </div>
+            <button id="btn-quick-calibrate" type="button" class="gyro-cal-btn">Калибровка</button>
+          </div>
+        </div>
+
+        <div class="hud-bottom-right">
+          <!-- Tachometer & Telemetry -->
+          <div id="tacho-panel" class="tacho-panel glass-panel">
+            <div class="tacho-main-row">
+              <div class="speed-block">
+                <div id="hud-speed" class="speed-num">0</div>
+                <div class="speed-unit">км/ч</div>
+              </div>
+              <div class="gear-block">
+                <div id="hud-gear" class="gear-badge">1</div>
+                <button id="hud-trans-badge" type="button" class="trans-badge">АКПП</button>
+              </div>
+            </div>
+            <div class="gauge-row">
+              <span id="hud-rpm-text" class="gauge-label">ОБ/МИН</span>
+              <div class="gauge-track">
+                <div id="hud-rpm-bar" class="gauge-fill rpm-fill"></div>
+              </div>
+            </div>
+            <div class="gauge-row">
+              <span id="hud-nitro-text" class="gauge-label">НИТРО</span>
+              <div class="gauge-track">
+                <div id="hud-nitro-bar" class="gauge-fill nitro-fill"></div>
+              </div>
+            </div>
+            <div id="hud-car-name" class="tacho-car-name">Мерседес-Бенц C63 AMG</div>
+          </div>
+
+          <!-- MT Gear Shift Paddles (visible in MT mode) -->
+          <div id="mt-shifter" class="mt-shifter hidden">
+            <button id="btn-shift-up" type="button" class="touch-btn shift-btn">+</button>
+            <button id="btn-shift-down" type="button" class="touch-btn shift-btn">-</button>
+          </div>
+
+          <!-- Ergonomic Multi-Touch Pedals -->
+          <div id="pedals-cluster" class="pedals-cluster">
+            <div class="pedals-col">
+              <button id="btn-handbrake" type="button" class="touch-btn pedal-btn pedal-handbrake">РУЧНИК</button>
+              <button id="btn-brake" type="button" class="touch-btn pedal-btn pedal-brake">ТОРМОЗ</button>
+            </div>
+            <div class="pedals-col">
+              <button id="btn-nitro" type="button" class="touch-btn pedal-btn pedal-nitro">НИТРО</button>
+              <button id="btn-gas" type="button" class="touch-btn pedal-btn pedal-gas">ГАЗ</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Garage Modal -->
+    <div id="modal-garage" class="modal-backdrop hidden">
+      <div class="modal-card modal-garage-card">
+        <div class="modal-header">
+          <div>
+            <div class="modal-kicker">ФЕСТИВАЛЬ ХОРАЙЗОН ЯПОНИЯ</div>
+            <h2 class="modal-title">ГАРАЖ — ВЫБОР АВТО</h2>
+          </div>
+          <button id="btn-close-garage" type="button" class="modal-close-btn">Закрыть</button>
+        </div>
+        <div id="garage-grid" class="garage-grid"></div>
+      </div>
+    </div>
+
+    <!-- Settings / Pause Modal -->
+    <div id="modal-settings" class="modal-backdrop hidden">
+      <div class="modal-card modal-settings-card">
+        <div class="modal-header">
+          <div>
+            <div class="modal-kicker">МЕНЮ · УПРАВЛЕНИЕ И ПАРАМЕТРЫ</div>
+            <h2 class="modal-title">НАСТРОЙКИ</h2>
+          </div>
+          <button id="btn-close-settings" type="button" class="modal-close-btn">Продолжить</button>
+        </div>
+
+        <div class="settings-list">
+          <div class="settings-row">
+            <span class="settings-label">Управление</span>
+            <div class="segmented-group">
+              <button id="opt-steer-wheel" type="button" class="seg-btn active">Руль</button>
+              <button id="opt-steer-buttons" type="button" class="seg-btn">Кнопки</button>
+              <button id="opt-steer-gyro" type="button" class="seg-btn">Гироскоп</button>
+            </div>
+          </div>
+
+          <div class="settings-row" id="row-gyro-calibrate">
+            <span class="settings-label">Калибровка гироскопа</span>
+            <button id="btn-calibrate-gyro" type="button" class="seg-btn">Калибровать</button>
+          </div>
+
+          <div class="settings-row">
+            <span class="settings-label">Коробка передач</span>
+            <div class="segmented-group">
+              <button id="opt-trans-at" type="button" class="seg-btn active">АКПП</button>
+              <button id="opt-trans-mt" type="button" class="seg-btn">МКПП</button>
+            </div>
+          </div>
+
+          <div class="settings-row">
+            <span class="settings-label">Камера</span>
+            <div class="segmented-group">
+              <button id="opt-cam-chase" type="button" class="seg-btn active">3-е лицо</button>
+              <button id="opt-cam-hood" type="button" class="seg-btn">Капот</button>
+            </div>
+          </div>
+
+          <div class="settings-row">
+            <span class="settings-label">Звук двигателя и эффектов</span>
+            <button id="opt-sound-toggle" type="button" class="seg-btn active">Вкл</button>
+          </div>
+
+          <div class="settings-row">
+            <span class="settings-label">Помощь на трассе</span>
+            <button id="btn-settings-reset" type="button" class="seg-btn action-warn">Вернуться на дорогу</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Exit Confirmation Modal (Android Back) -->
+    <div id="modal-exit" class="modal-backdrop hidden">
+      <div class="modal-card modal-exit-card">
+        <h2 class="modal-title">ВЫХОД ИЗ ИГРЫ</h2>
+        <p class="exit-text">Завершить поездку по Японии и выйти из Horizon 6: Япония 3D?</p>
+        <div class="exit-actions">
+          <button id="btn-exit-cancel" type="button" class="seg-btn active">Остаться</button>
+          <button id="btn-exit-confirm" type="button" class="seg-btn action-danger">Выйти</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

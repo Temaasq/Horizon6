@@ -1,0 +1,86 @@
+name: Build & Release Android APK
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'app/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - '.github/workflows/release.yml'
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (optional, e.g. v1.1.0)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android 34 platform & build-tools
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          if [ ! -f "$ANDROID_HOME/platforms/android-34/android.jar" ] || [ ! -d "$ANDROID_HOME/build-tools/34.0.0" ]; then
+            sdkmanager "platforms;android-34" "build-tools;34.0.0"
+          fi
+
+      - name: Run automated JS tests
+        run: node --test tests/unit/*.test.js tests/e2e/*.test.js
+
+      - name: Build & sign Android APK
+        run: python3 scripts/build_apk.py --no-copy
+
+      - name: Verify APK integrity & signature
+        run: python3 scripts/verify_apk.py --apk horizon6_japan_3d.apk
+
+      - name: Upload APK build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: horizon6_japan_3d_apk
+          path: horizon6_japan_3d.apk
+
+      - name: Resolve release tag
+        id: meta
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAG="${{ github.ref_name }}"
+          elif [[ -n "${{ github.event.inputs.tag }}" ]]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="v1.0.${{ github.run_number }}"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: "Horizon 6: Япония 3D (${{ steps.meta.outputs.tag }})"
+          files: horizon6_japan_3d.apk
+          generate_release_notes: true
